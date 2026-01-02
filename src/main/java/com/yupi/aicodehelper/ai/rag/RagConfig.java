@@ -9,6 +9,9 @@ import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
+import dev.langchain4j.store.embedding.qdrant.QdrantEmbeddingStore;
+import io.qdrant.client.QdrantClient;
+import io.qdrant.client.QdrantGrpcClient;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,5 +59,26 @@ public class RagConfig {
                 .minScore(0.75) // 过滤掉分数小于 0.75 的结果
                 .build();
         return contentRetriever;
+    }
+
+    @Bean
+    public EmbeddingStore<TextSegment> embeddingStore() {
+        return QdrantEmbeddingStore.builder()
+                .host("127.0.0.1")
+                .port(6334)
+                .collectionName("test-qdrant")
+                .build();
+    }
+
+    /**
+     * 创建Qdrant客户端
+     *
+     * @return Qdrant客户端
+     */
+    @Bean
+    public QdrantClient qdrantClient() {
+        QdrantGrpcClient.Builder grpcClientBuilder =
+                QdrantGrpcClient.newBuilder("127.0.0.1", 6334, false);
+        return new QdrantClient(grpcClientBuilder.build());
     }
 }
